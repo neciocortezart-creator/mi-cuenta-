@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Covey · Prioridades y plata</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div>
+      <p class="muted">Mi espacio</p>
+      <h1>Prioridades</h1>
+    </div>
+    <button class="icon-btn" id="btnReset" aria-label="Borrar todo">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>
+    </button>
+  </header>
+
+  <section class="balance" aria-label="Dinero">
+    <p class="muted">Disponible</p>
+    <p class="amount" id="free">$0</p>
+    <div class="meter"><i id="bar"></i></div>
+    <dl class="stats">
+      <div><dt>Ingresos</dt><dd id="inc">$0</dd></div>
+      <div><dt>Pagado</dt><dd id="paid">$0</dd></div>
+    </dl>
+  </section>
+
+  <nav class="filters" id="filters" aria-label="Filtros">
+    <button class="chip" data-f="ALL">Todas</button>
+    <button class="chip" data-f="Q1">Urgentes</button>
+    <button class="chip" data-f="ROCK">Clave</button>
+    <button class="chip" data-f="Casa">Casa</button>
+    <button class="chip" data-f="Trabajo">Trabajo</button>
+    <button class="chip" data-f="Estudio">Estudio</button>
+    <button class="chip" data-f="Familia">Familia</button>
+  </nav>
+
+  <section id="focus" aria-live="polite"></section>
+
+  <section>
+    <div class="list-head"><h2>Pendientes</h2><span class="muted" id="count"></span></div>
+    <div id="list"></div>
+  </section>
+</main>
+
+<div class="dock">
+  <button class="btn primary" id="btnTask">Nueva tarea</button>
+  <button class="btn" id="btnIncome">Registrar ingreso</button>
+  <button class="btn icon-btn-dock" id="btnMail" title="Importar correo bancario" aria-label="Importar correo">
+    <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+  </button>
+</div>
+
+<!-- Modal principal de creación/edición -->
+<dialog id="sheet">
+  <form id="form" autocomplete="off">
+    <div class="sheet-head">
+      <h3 id="sheetTitle">Nueva tarea</h3>
+      <button type="button" class="icon-btn" id="btnClose" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="seg" id="kindSeg" role="radiogroup" aria-label="Tipo">
+      <label><input type="radio" name="kind" value="task" checked><span>Tarea o gasto</span></label>
+      <label><input type="radio" name="kind" value="income"><span>Ingreso</span></label>
+    </div>
+
+    <label class="field">
+      <span id="lblTitle">¿Qué es?</span>
+      <input id="fTitle" type="text" placeholder="Pagar arriendo" required>
+    </label>
+    <p class="detect" id="detect" hidden></p>
+
+    <label class="field">
+      <span>Monto en CLP</span>
+      <input id="fAmount" type="text" inputmode="numeric" placeholder="320.000">
+    </label>
+
+    <div class="sheet-actions">
+      <button type="button" class="btn danger" id="btnDelete" hidden>Eliminar</button>
+      <button type="submit" class="btn primary" id="btnSave">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Modal de importación de correos bancarios -->
+<dialog id="mailSheet">
+  <form id="mailForm" autocomplete="off">
+    <div class="sheet-head">
+      <h3>Importar correo bancario</h3>
+      <button type="button" class="icon-btn" id="btnMailClose" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <label class="field">
+      <span>Pega el texto del correo bancario o notificación</span>
+      <textarea id="mailText" rows="5" class="area-field" placeholder="Pega aquí el comprobante de BancoEstado, Santander, Banco de Chile, BCI, MACH, etc."></textarea>
+    </label>
+
+    <div class="mail-preview" id="mailPreview" hidden>
+      <p class="muted">Detectado automáticamente:</p>
+      <div class="preview-box">
+        <span class="preview-tag" id="previewType"></span>
+        <strong id="previewTitle"></strong>
+        <span class="preview-amount" id="previewAmount"></span>
+      </div>
+    </div>
+
+    <div class="sheet-actions">
+      <button type="button" class="btn" id="btnPasteClip">Pegar portapapeles</button>
+      <button type="submit" class="btn primary" id="btnSaveMail" disabled>Registrar</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="js/format.js"></script>
+<script src="js/classify.js"></script>
+<script src="js/store.js"></script>
+<script src="js/mail-parser.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
